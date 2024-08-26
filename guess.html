@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess the Football Player</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .game-container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #player-image {
+            width: 280px;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        #guess-input {
+            padding: 10px;
+            width: 200px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #F3F7EC;
+            background: #333;
+            padding: 5px;
+        }
+
+        #timer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #FAFFAF;
+        }
+
+        /* Popup styling */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            z-index: 1000;
+            width: 300px;
+            display: none;
+        }
+
+        .popup img {
+            
+            margin-bottom: -40px;
+            border-radius: 8px;
+            display: block;
+            margin-left: auto;
+            margin-right: 200px;
+            position: absolute;
+    top: -95px; /* Adjusts the vertical position */
+    left: 0px; /* Adjusts the horizontal position */
+    width: 100px;
+    height: auto;
+         
+        }
+
+        .popup h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ff4757;
+        }
+
+        .popup p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2f3542;
+        }
+
+        .popup button {
+            background-color: #1e90ff;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .popup button:hover {
+            background-color: #3742fa;
+        }
+
+        /* Overlay to dim the background */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+    #targetScore {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  color: #fff;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 5px;
+  width: fit-content;
+  margin: 0 auto;
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+} 
+
+#scoreValue {
+  font-weight: bold;
+  color: #E88D67;
+}
+        
+    </style>
+</head>
+<body style="background-image: url('bg.png'); background-repeat: repeat;">
+    <p id="score">Score: 0</p> <!-- Score display -->
+    <div class="game-container">
+        <h1>Guess the Football Player</h1>
+        <img id="player-image" src="images/player1.jpg" alt="Football Player">
+        <input type="text" id="guess-input" placeholder="Enter player name...">
+        <button onclick="checkGuess()">Submit Guess</button>
+        <p id="result"></p>
+        <h2 id="timer">Time Left: 10s</h2> <!-- Timer display -->
+    </div>
+
+    <!-- Overlay and Popup for Game Over or You Won -->
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="gameOverPopup">
+        <img id="popup-image1" src="gameover.png" alt="Popup Image">
+       
+        <h2 id="popup-title">Game Over</h2>
+        <p id="popup-message">Time's up! Better luck next time.</p>        
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+<div id="targetScore">Target Score: <span id="scoreValue">56</span</div>
+
+
+<script>
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Initialize with the full set of players
+    let originalPlayers = [
+        { names: ["lionel messi", "messi","leo messi","lm10"], image: "messi.jpg" },
+        { names: ["cristiano ronaldo", "ronaldo","cristiano","cr7"], image: "ronaldo.jpg" },
+        { names: ["thomas muller", "muller"], image: "Muller.jpg" },
+        { names: ["neymar", "neymar jr"], image: "neymar.jpg"},
+        
+  { names: ["zlatan", "ibrahimovic","zlatan Ibrahimovic","lion"], image: "ibrahimovic.jpg" },
+        { names: ["baggio", "roberto baggio","the man who died standing"], image: "baggio.jpg" },
+        { names: ["pele", "pelé"], image: "pele.jpg" },
+        
+          { names: ["benzema", "karim benzema",], image: "benzema.jpg" },
+        { names: ["cruyff", "cuijff","cruyjff","johan cruyff"], image: "one.jpg" },
+        { names: ["kevin debruyne", "de bruyne"], image: "debruyne.jpg" },
+        { names: ["haaland", "erling haaland"], image: "haaland.jpg"},
+        
+  { names: ["maradona", "diego maradona"], image: "maradona.jpg" },
+        { names: ["mbappe", "kylian mbappe"], image: "mbappe.jpg" },
+        
+      { names: ["sergio ramos", "ramos"], image: "ramos.jpg" },
+        { names: ["luis suarez", "suarez"], image: "suarez.jpg" },
+        { names: ["lewandowski", "robert lewandowski"], image: "lewandowski.jpg" },
+        { names: ["vini jr", "vinicius jr", "vini" , "vinicius" , "vinicius junior"], image: "vini.jpg"},
+        
+  { names: ["ronaldinho","ronaldinho gaucho"], image: "ronaldinho.jpg" },
+        { names: ["ronaldo", "nazario","r9","ronaldo nazario"], image: "nazario.jpg" },
+            { names: ["antony"], image: "antony.jpg" },
+        { names: ["gareth bale", "bale"], image: "bale.jpg" },
+        { names: ["zico"], image: "zico.jpg" },
+        { names: ["carlos", "roberto carlos"], image: "carlos.jpg"},
+        
+  { names: ["silva", "thiago silva"], image: "thiagosilva.jpg" },
+        { names: ["marquinhos"], image: "marquinhos.jpg" },
+        { names: ["federico chiesa", "chiesa"], image: "chiesa.jpg" },
+        
+          { names: ["iker casillas", "casillas",], image: "casillas.jpg" },
+        { names: ["thibaut courtois", "courtois"], image: "courtois.jpg" },
+        { names: ["didier drogba", "drogba"], image: "drogba.jpg" },
+        { names: ["griezmann", "antoine greizmann"], image: "griezmann.jpg"},
+        
+  { names: ["eusebio"], image: "eusebio.jpg" },
+        { names: ["gullit", "ruud gullit"], image: "gullit.jpg" },
+        
+      { names: ["ricardo kaka", "kaka"], image: "kaka.jpg" },
+        { names: ["martinez", "lautaro martinez", "lautaro"], image: "lautaro.jpg" },
+        { names: ["jude bellingham", "bellingham"], image: "bellingham.jpg" },
+        { names: ["leao" , "rafeal leao"], image: "leao.jpg"},
+        
+  { names: ["garnacho", "alejandro garnacho"], image: "garnacho.jpg" },
+  
+      { names: ["maguire", "harry maguire"], image: "maguire.jpg" },
+        { names: ["paulo maldini","maldini"], image: "maldini.jpg" },
+        { names: [ "mudryk"], image: "mudryk.jpg" },
+        { names: ["mesut ozil", "ozil"], image: "ozil.jpg"},
+        
+  { names: ["pedri", "pedri gonzalez"], image: "pedri.jpg" },
+        { names: [ "raul gonzalez","raul"], image: "raul.jpg" },
+        { names: ["luka modric", "modric"], image: "modric.jpg" },
+        
+          { names: ["marcus rashford", "rashford",], image: "rashford.jpg" },
+        { names: ["marco reus","reus"], image: "reus.jpg" },
+        { names: ["heung min son", "son", "son heung min"], image: "son.jpg" },
+        { names: ["valverde", "federico valverde", "fede valverde"], image: "valverde.jpg"},
+        
+  { names: ["lamine yamal", "yamal"], image: "yamal.jpg" },
+        { names: ["virgil vandijk", "vandijk", "virgil van dijk", "van dijk"], image: "vandijk.jpg" },
+        
+      { names: ["vardy", "jamie vardy"], image: "vardy.jpg" },
+        { names: ["zinedine zidane", "zidane"], image: "zidane.jpg" },
+        { names: ["marcel sabitzer", "sabitzer"], image: "sabitzer.jpg" },
+        { names: ["schlotterbeck", "nico schlotterbeck"], image: "beck.jpg"},
+        
+  { names: ["jarred bowen","bowen"], image: "bowen.jpg" },
+  
+    { names: [ "calafiori","calafiori"], image: "calafiori.jpg" }
+    ];
+    
+    let players = [...originalPlayers]; // Clone the original players array
+    let currentPlayer = null;
+    let score = 0;
+    let timer;
+    let timeLeft = 30;
+
+    function startTimer() {
+        if (timer) clearInterval(timer);
+        timeLeft = 30;
+        document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                showGameOverPopup();
+            }
+        }, 1000);
+    }
+
+    function checkGuess() {  
+        const guessInput = document.getElementById('guess-input').value.toLowerCase();
+        const resultText = document.getElementById('result');
+
+        if (currentPlayer && currentPlayer.names.includes(guessInput)) {
+            resultText.textContent = "Correct! ⚽";
+            resultText.style.color = "green";
+            score++;
+            updateScore();
+
+            setTimeout(() => {
+                resultText.textContent = "";
+                nextPlayer();
+            }, 1000);
+        } else {
+            resultText.textContent = "Wrong! Try again.";
+            resultText.style.color = "red";
+        }
+
+        document.getElementById('guess-input').value = "";
+    }
+
+    function updateScore() {
+        document.getElementById('score').textContent = `Score: ${score}`;
+    }
+
+    function getRandomPlayer() {
+        if (players.length === 0) {
+            showYouWonPopup();
+            return null;
+        }
+        const randomIndex = Math.floor(Math.random() * players.length);
+        const player = players.splice(randomIndex, 1)[0]; // Remove the player from the array
+        return player;
+    }
+
+    function nextPlayer() {
+        const player = getRandomPlayer();
+        if (!player) return; // If there are no players left, exit
+
+        currentPlayer = player;
+        document.getElementById('player-image').src = player.image;
+        startTimer();
+    }
+
+    function showGameOverPopup() {
+        document.getElementById('popup-title').textContent = "Game Over";
+        document.getElementById('popup-message').textContent = "Time's up! Better luck next time.";
+        document.getElementById('popup-image1').src = "gameover.png";
+        showPopup();
+    }
+
+    function showYouWonPopup() {
+        clearInterval(timer);
+        document.getElementById('popup-title').textContent = "You Won!";
+        document.getElementById('popup-message').textContent = "Congratulations! You guessed all players.";
+        document.getElementById('popup-image1').src = "youwon.png";
+        showPopup();
+    }
+
+    function showPopup() {
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('gameOverPopup').style.display = 'block';
+    }
+
+    function restartGame() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('gameOverPopup').style.display = 'none';
+        players = [...originalPlayers]; // Reinitialize players array
+        score = 0;
+        updateScore();
+        nextPlayer();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        shuffleArray(players); // Optional: Shuffle the players initially if needed
+        nextPlayer();
+    });
+    
+    // Set the target score dynamically
+let targetScore = 56;
+document.getElementById("scoreValue").textContent = targetScore;
+
+// Update score (example usage)
+function updateTargetScore(newScore) {
+  targetScore = newScore;
+  document.getElementById("scoreValue").textContent = targetScore;
+}
+
+</script>
+    
+</body>
+</html>
