@@ -33,7 +33,7 @@
 
         #game-board {
             display: grid;
-            grid-template-columns: repeat(4, 100px);
+            grid-template-columns: repeat(5, 100px);
             grid-gap: 10px;
         }
 
@@ -93,12 +93,12 @@
         }
 
         #scores {
-            margin-top: 20px;
+            margin-top: 60px;
             font-size: 1.6em;
             display: flex;
             justify-content: space-between;
-            width: 400px;
-            background-color: #006fff;
+            width: 500px;
+            background-color: green;
         }
 
         .popup {
@@ -152,13 +152,16 @@
     <script>
         const cardsArray = [
             { name: 'ball', img: 'cr.jpg' },
-            { name: 'goal', img: 'zizou.jpg' },
-            { name: 'trophy', img: 'rl.jpg' },
-            { name: 'jersey', img: 'pele.jpg' },
-            { name: 'whistle', img: 'lm.jpg' },
-            { name: 'boot', img: 'njr.jpg' },
-            { name: 'referee', img:'vb.jpg' },
-            { name: 'stadium', img: 'eh.jpg' }
+            { name: 'goal', img: 'paulo.jpg' },
+            { name: 'trophy', img: 'haalan.jpg' },
+            { name: 'jersey', img: 'lewa.jpg' },
+            { name: 'whistle', img: 'zizu.jpg' },
+            { name: 'boot', img: 'ney.jpg' },
+            { name: 'referee', img: 'van.jpg' },
+            { name: 'stadium', img: 'mess.jpg' },
+            // Additional cards
+            { name: 'glove', img: 'mbapp.jpg' },
+            { name: 'flag', img: 'naz.jpg' },
         ];
 
         let gameBoard = document.getElementById('game-board');
