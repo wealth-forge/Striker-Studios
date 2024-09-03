@@ -15,6 +15,8 @@
             margin: 0;
             background-color: #282c34;
             color: white;
+
+            
         }
 
         h1 {
@@ -88,18 +90,46 @@
         }
 
         #player-turn {
-            margin-top: -24px;
-            font-size: 1.4em;
+            
+          margin-top: 110px; /* Adjusts spacing from the top */
+    font-size: 1.6em;
+    display: flex;
+    justify-content: space-between;
+    width: 150px;
+    background-color: #4CAF60; /* Softer green */
+    color: white; /* Text color */
+    position: absolute;
+    top: 0; /* Positions the scores at the top */
+    left: 35%;
+      /* Centers the scores horizontally */
+    
+    padding: 10px; /* Adds padding inside the box */
+    border-radius: 10px; /* Curved corners */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    text-align: center; /* Center text alignment */  
+            
+            
+            
         }
 
-        #scores {
-            margin-top: 60px;
-            font-size: 1.6em;
-            display: flex;
-            justify-content: space-between;
-            width: 500px;
-            background-color: green;
-        }
+    #scores {
+    margin-top: 60px; /* Adjusts spacing from the top */
+    font-size: 1.6em;
+    display: flex;
+    justify-content: space-between;
+    width: 500px;
+    background-color: #4CAF50; /* Softer green */
+    color: white; /* Text color */
+    position: absolute;
+    top: 0; /* Positions the scores at the top */
+    left: 50%;
+    transform: translateX(-50%); /* Centers the scores horizontally */
+    
+    padding: 10px 20px; /* Adds padding inside the box */
+    border-radius: 30px; /* Curved corners */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    text-align: center; /* Center text alignment */
+}
 
         .popup {
             display: none;
@@ -131,9 +161,9 @@
         }
     </style>
 </head>
-<body style="background-image: url('bg.png'); background-repeat: repeat;">
+<body style="background-image: url('2.jpg');">
 
-    <h1>Footy Matchups</h1>
+  
     <div id="game-board"></div>
     <div id="scores">
         <span id="player1-score">Player 1: 0</span>
@@ -150,144 +180,155 @@
     </div>
 
     <script>
-        const cardsArray = [
-            { name: 'ball', img: 'cris.jpg' },
-            { name: 'goal', img: 'paulo.jpg' },
-            { name: 'trophy', img: 'haalan.jpg' },
-            { name: 'jersey', img: 'lewa.jpg' },
-            { name: 'whistle', img: 'zizu.jpg' },
-            { name: 'boot', img: 'ney.jpg' },
-            { name: 'referee', img: 'van.jpg' },
-            { name: 'stadium', img: 'mess.jpg' },
-            // Additional cards
-            { name: 'glove', img: 'mbapp.jpg' },
-            { name: 'flag', img: 'naz.jpg' },
-        ];
+        
+  const cardsArray = [
+    { name: 'ball', img: 'cr7.jpg' },
+    { name: 'goal', img: 'paulo.jpg' },
+    { name: 'trophy', img: 'eh9.jpg' },
+    { name: 'jersey', img: 'lewa.jpg' },
+    { name: 'whistle', img: 'zizu.jpg' },
+    { name: 'boot', img: 'njr.jpg' },
+    { name: 'referee', img: 'kroos.jpg' },
+    { name: 'stadium', img: 'lm10.jpg' },
+    { name: 'glove', img: 'km9.jpg' },
+    { name: 'flag', img: 'naz.jpg' },
+];
 
-        let gameBoard = document.getElementById('game-board');
-        let resetButton = document.getElementById('reset-button');
-        let playerTurnDisplay = document.getElementById('player-turn');
-        let player1ScoreDisplay = document.getElementById('player1-score');
-        let player2ScoreDisplay = document.getElementById('player2-score');
+let gameBoard = document.getElementById('game-board');
+let resetButton = document.getElementById('reset-button');
+let playerTurnDisplay = document.getElementById('player-turn');
+let playerScoresDisplay = [
+    document.getElementById('player1-score'),
+    document.getElementById('player2-score')
+];
 
-        let cardsChosen = [];
-        let cardsChosenIds = [];
-        let cardsWon = [];
-        let currentPlayer = 1;
-        let player1Score = 0;
-        let player2Score = 0;
+const storedPlayers = JSON.parse(localStorage.getItem('players')) || {
+    player1: 'Player 1',
+    player2: 'Player 2',
+};
 
-        function createBoard() {
-            const shuffledCards = [...cardsArray, ...cardsArray].sort(() => 0.5 - Math.random());
-            gameBoard.innerHTML = '';
-            shuffledCards.forEach((card, index) => {
-                let cardElement = document.createElement('div');
-                cardElement.classList.add('card');
-                cardElement.dataset.name = card.name;
-                cardElement.dataset.id = index;
+const players = {
+    player1: storedPlayers.player1 || 'Player 1',
+    player2: storedPlayers.player2 || 'Player 2',
+};
 
-                cardElement.innerHTML = `
-                    <div class="card-inner">
-                        <div class="card-front" style="background-image: url('${card.img}')"></div>
-                        <div class="card-back"></div>
-                    </div>
-                `;
-                gameBoard.appendChild(cardElement);
+let cardsChosen = [];
+let cardsChosenIds = [];
+let cardsWon = [];
+let currentPlayer = 1;
+let scores = { player1: 0, player2: 0 };
 
-                cardElement.addEventListener('click', flipCard);
-            });
+function createBoard() {
+    const shuffledCards = [...cardsArray, ...cardsArray].sort(() => 0.5 - Math.random());
+    gameBoard.innerHTML = '';
+    shuffledCards.forEach((card, index) => {
+        let cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        cardElement.dataset.name = card.name;
+        cardElement.dataset.id = index;
 
-            // Reset game state
-            cardsChosen = [];
-            cardsChosenIds = [];
-            cardsWon = [];
-            player1Score = 0;
-            player2Score = 0;
-            currentPlayer = 1;
-            
-            updatePlayerTurn();
-            updateScores();
+        cardElement.innerHTML = `
+            <div class="card-inner">
+                <div class="card-front" style="background-image: url('${card.img}')"></div>
+                <div class="card-back"></div>
+            </div>
+        `;
+        gameBoard.appendChild(cardElement);
+
+        cardElement.addEventListener('click', flipCard);
+    });
+
+    // Reset game state
+    cardsChosen = [];
+    cardsChosenIds = [];
+    cardsWon = [];
+    scores = { player1: 0, player2: 0 };
+    currentPlayer = 1;
+
+    updatePlayerTurn();
+    updateScores();
+}
+
+function flipCard() {
+    let selectedCard = this.querySelector('.card-inner');
+    let cardId = this.dataset.id;
+
+    if (cardsChosenIds.length < 2 && !cardsChosenIds.includes(cardId)) {
+        selectedCard.parentElement.classList.add('flip');
+        cardsChosen.push(this.dataset.name);
+        cardsChosenIds.push(cardId);
+
+        if (cardsChosen.length === 2) {
+            setTimeout(checkForMatch, 500);
         }
+    }
+}
 
-        function flipCard() {
-            let selectedCard = this.querySelector('.card-inner');
-            let cardId = this.dataset.id;
+function checkForMatch() {
+    const cards = document.querySelectorAll('.card');
+    const [optionOneId, optionTwoId] = cardsChosenIds;
 
-            if (cardsChosenIds.length < 2 && !cardsChosenIds.includes(cardId)) {
-                selectedCard.parentElement.classList.add('flip');
-                cardsChosen.push(this.dataset.name);
-                cardsChosenIds.push(cardId);
+    if (cardsChosen[0] === cardsChosen[1]) {
+        cardsWon.push(cardsChosen);
+        cards[optionOneId].removeEventListener('click', flipCard);
+        cards[optionTwoId].removeEventListener('click', flipCard);
 
-                if (cardsChosen.length === 2) {
-                    setTimeout(checkForMatch, 500);
-                }
-            }
-        }
+        scores[`player${currentPlayer}`]++;
+    } else {
+        cards[optionOneId].classList.remove('flip');
+        cards[optionTwoId].classList.remove('flip');
+        switchPlayer();
+    }
 
-        function checkForMatch() {
-            const cards = document.querySelectorAll('.card');
-            const [optionOneId, optionTwoId] = cardsChosenIds;
+    cardsChosen = [];
+    cardsChosenIds = [];
 
-            if (cardsChosen[0] === cardsChosen[1]) {
-                cardsWon.push(cardsChosen);
-                cards[optionOneId].removeEventListener('click', flipCard);
-                cards[optionTwoId].removeEventListener('click', flipCard);
+    if (cardsWon.length === cardsArray.length) {
+        showPopup(`Congratulations ${players[`player${currentPlayer}`]}! You found all matches!`);
+    }
 
-                if (currentPlayer === 1) {
-                    player1Score++;
-                } else {
-                    player2Score++;
-                }
-            } else {
-                cards[optionOneId].classList.remove('flip');
-                cards[optionTwoId].classList.remove('flip');
-                switchPlayer();
-            }
+    updatePlayerTurn();
+    updateScores();
+}
 
-            cardsChosen = [];
-            cardsChosenIds = [];
+function showPopup(message) {
+    document.getElementById('popup-message').textContent = message;
+    document.getElementById('popup-box').style.display = "flex";
+}
 
-            if (cardsWon.length === cardsArray.length) {
-                showPopup(`Congratulations Player ${currentPlayer}! You found all matches!`);
-            }
+const restartButtonPopup = document.getElementById('restart-button-popup');
+const menuButtonPopup = document.getElementById('menu-button-popup');
 
-            updatePlayerTurn();
-            updateScores();
-        }
+menuButtonPopup.addEventListener('click', function() {
+    window.location.href = 'hom.html'; // Replace 'your-page.html' with the URL of the target HTML page
+});
 
-        function showPopup(message) {
-            document.getElementById('popup-message').textContent = message;
-            document.getElementById('popup-box').style.display = "flex";
-        }
+restartButtonPopup.onclick = function() {
+    document.getElementById('popup-box').style.display = "none";
+    createBoard();
+};
 
-        const restartButtonPopup = document.getElementById('restart-button-popup');
-        const menuButtonPopup = document.getElementById('menu-button-popup');
+menuButtonPopup.onclick = function() {
+    document.getElementById('popup-box').style.display = "none";
+};
 
-        restartButtonPopup.onclick = function() {
-            document.getElementById('popup-box').style.display = "none";
-            createBoard();
-        };
+function switchPlayer() {
+    currentPlayer = (currentPlayer % Object.keys(players).length) + 1;
+}
 
-        menuButtonPopup.onclick = function() {
-            document.getElementById('popup-box').style.display = "none";
-        };
+function updatePlayerTurn() {
+    playerTurnDisplay.textContent = `${players[`player${currentPlayer}`]}'s turn`;
+}
 
-        function switchPlayer() {
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
-        }
+function updateScores() {
+    playerScoresDisplay[0].textContent = `${players.player1}: ${scores.player1}`;
+    playerScoresDisplay[1].textContent = `${players.player2}: ${scores.player2}`;
+}
 
-        function updatePlayerTurn() {
-            playerTurnDisplay.textContent = `Player ${currentPlayer}'s turn`;
-        }
+resetButton.addEventListener('click', createBoard);
 
-        function updateScores() {
-            player1ScoreDisplay.textContent = `Player 1: ${player1Score}`;
-            player2ScoreDisplay.textContent = `Player 2: ${player2Score}`;
-        }
-
-        resetButton.addEventListener('click', createBoard);
-
-        createBoard();
+createBoard();
+        
     </script>
 
 </body>
