@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Memory Card Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #282c34;
+            color: white;
+
+            
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-family: 'New amsterdam', serif;
+            font-size: 34px;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            background: linear-gradient(to right, #0ffff0, #0ff0ff);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(5,100px);
+            grid-gap: 7px;
+        }
+
+        .card {
+            width: 80px;
+            height: 110px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flip .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card .card-front, .card .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card .card-back {
+            background-color: #ffffff;
+            background-image: url('ball.jpg');
+            background-size: cover;
+            color: white;
+        }
+
+        .card .card-front {
+            background-size: cover;
+            transform: rotateY(180deg);
+        }
+
+        #reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #61dafb;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        #player-turn {
+            
+          margin-top: 60px; /* Adjusts spacing from the top */
+          font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+    font-size: 1.6em;
+    display: flex;
+    justify-content: space-between;
+    width: 150px;
+    background-color: #4CAF60; /* Softer green */
+    color: white; /* Text color */
+    position: absolute;
+    top: 0; /* Positions the scores at the top */
+    left: 35%;
+      /* Centers the scores horizontally */
+    
+    padding: 10px; /* Adds padding inside the box */
+    border-radius: 10px; /* Curved corners */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    text-align: center; /* Center text alignment */  
+            
+            
+            
+        }
+
+    #scores {
+    margin-top: 60px; /* Adjusts spacing from the top */
+    margin-left: 3px;
+    margin-right: 60px;
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+
+
+    font-size: 1.6em;
+    display: flex;
+    justify-content: space-between;
+    width: 450px;
+    background-color: #4CAF50; /* Softer green */
+    color: white; /* Text color */
+    position: absolute;
+    top: 0; /* Positions the scores at the top */
+    left: 50%;
+    transform: translateX(-50%); /* Centers the scores horizontally */
+    
+    padding: 10px 20px; /* Adds padding inside the box */
+    border-radius: 30px; /* Curved corners */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    text-align: center; /* Center text alignment */
+}
+
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .popup-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            margin: auto;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body style="background-image: url('2.jpg');">
+
+  
+    <div id="game-board"></div>
+    <div id="scores">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+        <span id="player1-score">Player 1: 0</span>
+        <span id="player2-score">Player 2: 0</span>
+    </div>
+    <div id="player-turn"><b>Player 1's turn</b></div>
+    <button id="reset-button">Restart Game</button>
+    <div id="popup-box" class="popup">
+        <div class="popup-content">
+            <p id="popup-message">Congratulations for winning the game!</p>
+            <button id="restart-button-popup">Restart Game</button>
+            <button id="menu-button-popup">Menu</button>
+        </div>
+    </div>
+
+    <script>
+        
+  const cardsArray = [
+    { name: 'ball', img: 'si.jpg' },
+    { name: 'goal', img: 'dia.jpg' },
+    { name: 'trophy', img: 'dinho.jpg' },
+    { name: 'jersey', img: 'kdb.jpg' },
+    { name: 'whistle', img: 'kvara.jpg' },
+    { name: 'boot', img: 'nj.jpg' },
+    { name: 'referee', img: '10.jpg' },
+    { name: 'stadium', img: 'mess.jpg' },
+    { name: 'gove', img: 'buff.jpg' },
+    { name: 'flag', img: 'bell.jpg' },
+    { name: 'stadum', img: 'goat.jpg' },
+    { name: 'glve', img: 'sc.jpg' },
+   { name: 'stadim', img: 'talent.jpg' },
+    { name: 'glove', img: 'vini.jpg' },
+      { name: 'glov', img: 'turtle.jpg' },
+  
+    
+    
+];
+
+let gameBoard = document.getElementById('game-board');
+let resetButton = document.getElementById('reset-button');
+let playerTurnDisplay = document.getElementById('player-turn');
+let playerScoresDisplay = [
+    document.getElementById('player1-score'),
+    document.getElementById('player2-score')
+];
+
+const storedPlayers = JSON.parse(localStorage.getItem('players')) || {
+    player1: 'Player 1',
+    player2: 'Player 2',
+};
+
+const players = {
+    player1: storedPlayers.player1 || 'Player 1',
+    player2: storedPlayers.player2 || 'Player 2',
+};
+
+let cardsChosen = [];
+let cardsChosenIds = [];
+let cardsWon = [];
+let currentPlayer = 1;
+let scores = { player1: 0, player2: 0 };
+
+function createBoard() {
+    const shuffledCards = [...cardsArray, ...cardsArray].sort(() => 0.5 - Math.random());
+    gameBoard.innerHTML = '';
+    shuffledCards.forEach((card, index) => {
+        let cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        cardElement.dataset.name = card.name;
+        cardElement.dataset.id = index;
+
+        cardElement.innerHTML = `
+            <div class="card-inner">
+                <div class="card-front" style="background-image: url('${card.img}')"></div>
+                <div class="card-back"></div>
+            </div>
+        `;
+        gameBoard.appendChild(cardElement);
+
+        cardElement.addEventListener('click', flipCard);
+    });
+
+    // Reset game state
+    cardsChosen = [];
+    cardsChosenIds = [];
+    cardsWon = [];
+    scores = { player1: 0, player2: 0 };
+    currentPlayer = 1;
+
+    updatePlayerTurn();
+    updateScores();
+}
+
+function flipCard() {
+    let selectedCard = this.querySelector('.card-inner');
+    let cardId = this.dataset.id;
+
+    if (cardsChosenIds.length < 2 && !cardsChosenIds.includes(cardId)) {
+        selectedCard.parentElement.classList.add('flip');
+        cardsChosen.push(this.dataset.name);
+        cardsChosenIds.push(cardId);
+
+        if (cardsChosen.length === 2) {
+            setTimeout(checkForMatch, 500);
+        }
+    }
+}
+
+function checkForMatch() {
+    const cards = document.querySelectorAll('.card');
+    const [optionOneId, optionTwoId] = cardsChosenIds;
+
+    if (cardsChosen[0] === cardsChosen[1]) {
+        cardsWon.push(cardsChosen);
+        cards[optionOneId].removeEventListener('click', flipCard);
+        cards[optionTwoId].removeEventListener('click', flipCard);
+
+        scores[`player${currentPlayer}`]++;
+    } else {
+        cards[optionOneId].classList.remove('flip');
+        cards[optionTwoId].classList.remove('flip');
+        switchPlayer();
+    }
+
+    cardsChosen = [];
+    cardsChosenIds = [];
+
+    if (cardsWon.length === cardsArray.length) {
+        showPopup(`Congratulations ${players[`player${currentPlayer}`]}! You found all matches!`);
+    }
+
+    updatePlayerTurn();
+    updateScores();
+}
+
+function showPopup(message) {
+    document.getElementById('popup-message').textContent = message;
+    document.getElementById('popup-box').style.display = "flex";
+}
+
+const restartButtonPopup = document.getElementById('restart-button-popup');
+const menuButtonPopup = document.getElementById('menu-button-popup');
+
+menuButtonPopup.addEventListener('click', function() {
+    window.location.href = 'hom.html'; // Replace 'your-page.html' with the URL of the target HTML page
+});
+
+restartButtonPopup.onclick = function() {
+    document.getElementById('popup-box').style.display = "none";
+    createBoard();
+};
+
+menuButtonPopup.onclick = function() {
+    document.getElementById('popup-box').style.display = "none";
+};
+
+function switchPlayer() {
+    currentPlayer = (currentPlayer % Object.keys(players).length) + 1;
+}
+
+function updatePlayerTurn() {
+    playerTurnDisplay.textContent = `${players[`player${currentPlayer}`]}'s turn`;
+}
+
+function updateScores() {
+    playerScoresDisplay[0].textContent = `${players.player1}: ${scores.player1}`;
+    playerScoresDisplay[1].textContent = `${players.player2}: ${scores.player2}`;
+}
+
+resetButton.addEventListener('click', createBoard);
+
+createBoard();
+        
+    </script>
+
+</body>
+</html>
